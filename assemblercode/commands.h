@@ -2,6 +2,7 @@
 #define COMMANDS_H
 
 #include "stack.h"
+#include "fileLib.h"
 
 const int NUMBER_OF_COMMANDS = 9;
 const int NUMBER_OF_REGISTRS = 4;
@@ -26,7 +27,7 @@ struct reg
     const int id; 
 };
 
-struct command cmd_array[] = {
+command cmd_array[] = {
     {
         .name = "halt",
         .id = 0,
@@ -82,7 +83,7 @@ struct command cmd_array[] = {
     }
 };
 
-struct reg reg_array[] = {
+reg reg_array[] = {
     {
         .name = "rax",
         .id = 0
