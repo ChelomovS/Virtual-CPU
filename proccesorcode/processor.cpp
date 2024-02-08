@@ -1,5 +1,5 @@
 #include "processor.h"
-#include "commands.h"
+#include "../shared/commands.h"
 
 proc_errors proc_constructor(Processor* proc)
 {
@@ -10,84 +10,122 @@ proc_errors proc_constructor(Processor* proc)
     proc->reg[1] = 0;
     proc->reg[2] = 0;
     proc->reg[3] = 0;
-    proc->reg[4] = 0;
 
     return proc_ok;
 }
+
 proc_errors execute(Processor* proc, FILE* translated_file)
 {
     ASSERT(proc != nullptr);
     ASSERT(translated_file != nullptr);
 
-    ParseFile(translated_file, &proc->filedata);
+    proc->filedata.bufSize = GetFileSize(translated_file);
+    proc->filedata.buf = (byte_t*)calloc(proc->filedata.bufSize, sizeof(byte_t));
+    fread(proc->filedata.buf, sizeof(byte_t), proc->filedata.bufSize, translated_file);
 
-    for (size_t pass = 0; pass < proc->filedata.textSize; pass++)
+    fclose(translated_file);
+
+    for (size_t pass = 0; pass < proc->filedata.bufSize; pass += sizeof(byte_t))
     {
-        do_commands(proc, proc->filedata.text[pass]);
+        do_commands(proc, &proc->filedata.buf[pass]);
     }
 
+    free(proc->filedata.buf);
     return proc_ok;
 }
 
-proc_errors do_commands(Processor* proc, const char* text)
+proc_errors do_commands(Processor* proc, byte_t* text)
 {
-    int cmd_id = 0;
-    double primary_arg = 0;
-    double optional_arg = 0;
+    ASSERT(proc != nullptr);
+    ASSERT(text != nullptr); 
+    int cmd_id = *text; 
 
-    if (sscanf(text, "%d%lf%lf", &cmd_id, &primary_arg, &optional_arg) == 1)
+    if ((*(byte_t*)text + 1) == 0b0)
+    {
         switch (cmd_id)
         {
             case cmd_array[0].id:
-            halt();
+                halt();
+                break;
+
 
             case cmd_array[1].id:
-            add(&proc->stack);
+                add(&proc->stack);
+                break;
 
             case cmd_array[2].id:
-            sub(&proc->stack);
+                sub(&proc->stack);
+                break;
 
             case cmd_array[3].id:
-            mul(&proc->stack);
+                mul(&proc->stack);
+                break;
 
             case cmd_array[4].id:
-            div(&proc->stack);
-
-            case cmd_array[5].id:
-            push(proc, primary_arg, optional_arg);
-            case cmd_array[6].id:
-            pop(proc, primary_arg, optional_arg);
-
-            case cmd_array[7].id:
-            in(&proc->stack);
+                div(&proc->stack);
+                break;
 
             case cmd_array[8].id:
-            out(&proc->stack);
+                out(&proc->stack);
+                break;
+
+            case cmd_array[7].id:
+                in(&proc->stack);
+                break;
+
+        }
+    }
+    else 
+        if (((*(byte_t*)text + 1) == CONST_MASK) || ((*(byte_t*)text + 1) == REG_MASK))
+        {
+            text += sizeof(byte_t);
+            check_arg(proc, text, cmd_id);
         }
 
-    return proc_ok;
+}
+void check_arg(Processor* proc, byte_t* text, int command_id)
+{
+    if (command_id == 5)
+        if ((*(byte_t*)text + 1) == CONST_MASK)
+        {
+            int const_tmp = *text;
+            push(proc, 0, const_tmp);
+        }
+        if ((*(byte_t*)text + 1) == REG_MASK)
+        {
+            int reg_tmp = *text;
+            push(proc, 1, reg_tmp);
+        }
+
+    if (command_id == 6)
+        if ((*(byte_t*)text + 1) == CONST_MASK)
+        {
+            int const_tmp = *text;
+            pop(proc, 0, const_tmp);
+        }
+        if ((*(byte_t*)text + 1) == REG_MASK)
+        {
+            int reg_tmp = *text;
+            pop(proc, 1, reg_tmp);
+        }
+
 }
 
 void proc_destructor(Processor* proc)
 {
     ASSERT(proc != nullptr);
 
-    proc->filedata.textSize = 0;
-    proc->filedata.bufSize = 0;
-    free(&proc->filedata);
-
-    proc->stack.capacity = 0;
-    proc->stack.size = 0;
-    free(&proc->stack);
+    FileDataBinDtor(&proc->filedata);
+    stack_destructor(&proc->stack);
 
     
-    proc->reg[1];
-    proc->reg[2];
-    proc->reg[3];
-    proc->reg[4];
+    proc->reg[0] = 0;
+    proc->reg[1] = 0;
+    proc->reg[2] = 0;
+    proc->reg[3] = 0;
 }
 
-void proc_dump(Processor* proc)
+void proc_dump(Processor* const proc)
 {
     ASSERT(proc != nullptr);
 
@@ -95,9 +133,6 @@ void proc_dump(Processor* proc)
 
     for (size_t reg_number = 0; reg_number < NUMBER_OF_REGISTRS; reg_number++)
     {
-        fprintf(stderr, "%lf", proc->reg[reg_number]);
+        fprintf(stderr, "%d \n", proc->reg[reg_number]);
     }
-
-    fprintf(stderr, "%d", &proc->filedata.textSize);
-    fprintf(stderr, "%s", &proc->filedata.text);
 }

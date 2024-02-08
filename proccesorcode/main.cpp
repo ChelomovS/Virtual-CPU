@@ -2,7 +2,7 @@
 
 
 int main()
-{
+{   
     Processor proc = {};
 
     proc_constructor(&proc);

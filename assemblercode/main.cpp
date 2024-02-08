@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "assembler.h"
-#include "fileLib.h"
+#include "../shared/fileLib.h"
 
 int main(const int argc, const char** argv)
 {
@@ -11,7 +11,9 @@ int main(const int argc, const char** argv)
 
     assemble(&assembler);
 
-    asm_dtor(&assembler, assembler.trans_file);
+    translate_code_to_file(&assembler);
+
+    asm_dtor(&assembler);
 
     return 0;
 

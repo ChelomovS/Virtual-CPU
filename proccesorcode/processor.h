@@ -1,16 +1,12 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include "stack.h"
-#include "fileLib.h"
-#include "commands.h"
+#include "../shared/stack.h"
+#include "../shared/fileLib.h"
+#include "../shared/commands.h"
 
-struct Processor
-{
-    Stack stack;
-    FileData filedata;
-    double reg[4];
-};
+typedef uint32_t chunk_t;
+typedef uint8_t byte_t;
 
 enum proc_errors
 {
@@ -20,10 +16,9 @@ enum proc_errors
 
 proc_errors proc_constructor(Processor* proc);
 proc_errors execute(Processor* proc, FILE* translated_file);
-proc_errors do_commands(Processor* proc, const char* text);
+proc_errors do_commands(Processor* proc, byte_t* text);
+void check_arg(Processor* proc, byte_t* text, int command_id);
 void proc_dump(Processor* proc);
 void proc_destructor(Processor* proc);
-
-
 
 #endif // PROCESSOR_H
