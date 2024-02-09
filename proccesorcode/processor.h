@@ -13,8 +13,8 @@ enum proc_errors
 
 proc_errors proc_constructor(Processor* proc, FILE* translated_file);
 proc_errors execute(Processor* proc);
-proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass);
-void check_arg(Processor* proc, chunk_t text, chunk_t command_id);
+proc_errors do_commands(Processor* proc, chunk_t* text, size_t* pass);
+void check_arg(Processor* proc, chunk_t* text, byte_t command_id, size_t* pass);
 void proc_dump(Processor* proc);
 void proc_destructor(Processor* proc);
 

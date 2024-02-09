@@ -21,7 +21,7 @@ struct FileData
 
 struct FileDataBin
 {
-    byte_t* buf;
+    chunk_t* buf;
     size_t bufSize;
 
     char** text;
