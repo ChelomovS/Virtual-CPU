@@ -81,6 +81,6 @@ void stack_dump(Stack* stack)
 
     for (size_t i = 0; i < stack->size; i++)
     {
-        printf(YELLOW ">>> Element %d \n", i, ELEM_SPEC "\n" BLACK, stack->data[i]); 
+        printf(">>> Element %d \n", stack->data[i]); 
     }
 }

@@ -1,4 +1,5 @@
-push 2
-push rax 
+in 
+in
 add
+out
 halt

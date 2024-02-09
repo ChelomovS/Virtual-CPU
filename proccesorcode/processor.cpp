@@ -8,13 +8,15 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
 
     proc->filedata.bufSize = GetFileSize(translated_file);
 
-    if(proc->filedata.bufSize % sizeof(chunk_t) != 0)
+    if (proc->filedata.bufSize % sizeof(chunk_t) != 0)
     {
         fclose(translated_file);
+        fprintf(stderr, ">>>BAD SIZE BUF \n");
         return proc_error;
     }
 
     proc->filedata.buf = (byte_t*)calloc(proc->filedata.bufSize, sizeof(byte_t));
+    
     fread(proc->filedata.buf, sizeof(byte_t), proc->filedata.bufSize, translated_file);
 
     fclose(translated_file);
@@ -31,10 +33,13 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
 proc_errors execute(Processor* proc)
 {
     ASSERT(proc != nullptr);
-
+    printf (">>> размер буфера %d, команд должно быть: %d \n", proc->filedata.bufSize, proc->filedata.bufSize/5);
     for (size_t pass = 0; pass < proc->filedata.bufSize; pass += sizeof(chunk_t))
-    {
+    {   
+        printf(">>>Зашел в цикл\n");
+        printf(">>>Команда номер: %d \n", pass);
         do_commands(proc, proc->filedata.buf[pass], &pass);
+
     }
 
     return proc_ok;
@@ -44,53 +49,71 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
 {
     ASSERT(proc != nullptr);
 
-    chunk_t cmd_id = text; 
+    chunk_t cmd_id = (byte_t)text;
+    printf(">>>айди этой команды %d \n", cmd_id);
 
     if ((*(byte_t*)&text + 1) == 0b0)
     {
+        printf(">>>Нашел команду без аргументов\n");
+
         switch (cmd_id)
         {
             case cmd_array[0].id:
+                printf(">>>Нашел halt\n");
                 halt();
                 break;
 
             case cmd_array[1].id:
+                printf(">>>Нашел add\n");
                 add(&proc->stack);
                 break;
 
             case cmd_array[2].id:
+                printf(">>>Нашел sub\n");
                 sub(&proc->stack);
                 break;
 
             case cmd_array[3].id:
+                printf(">>>Нашел mul\n");
                 mul(&proc->stack);
                 break;
 
             case cmd_array[4].id:
+                printf(">>>Нашел div\n");   
                 div(&proc->stack);
                 break;
 
             case cmd_array[8].id:
+                printf(">>>Нашел ou\n");
                 out(&proc->stack);
                 break;
 
             case cmd_array[7].id:
+                printf(">>>Нашел in\n");
                 in(&proc->stack);
                 break;
-
+            
+            default:
+                printf("Команда без аргумента не найдена\n");
         }
+        return proc_ok;
     }
-    else 
+    else
         if (((*(byte_t*)&text + 1) == CONST_MASK) || ((*(byte_t*)&text + 1) == REG_MASK))
         {
+            printf(">>>Нашел команду c аргументом\n");
             *pass += sizeof(chunk_t);
             check_arg(proc, text, cmd_id);
+
+            return proc_ok;
         }
 
 }
+
 void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
 {
     if (command_id == 5)
+    {
         if ((*(byte_t*)&text + 1) == CONST_MASK)
         {
             int const_tmp = (int)text;
@@ -101,8 +124,9 @@ void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
             int reg_tmp = (int)text;
             push(proc, 1, reg_tmp);
         }
-
+    }
     if (command_id == 6)
+    {
         if ((*(byte_t*)&text + 1) == CONST_MASK)
         {
             int const_tmp = (int)text;
@@ -113,7 +137,7 @@ void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
             int reg_tmp = (int)text;
             pop(proc, 1, reg_tmp);
         }
-
+    }
 }
 
 void proc_destructor(Processor* proc)
@@ -139,4 +163,5 @@ void proc_dump(Processor* proc)
     {
         fprintf(stderr, "%d \n", proc->reg[reg_number]);
     }
+    
 }
