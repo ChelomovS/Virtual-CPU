@@ -103,11 +103,6 @@ int push(Processor* proc, int primary_arg, int optional_arg)
 
 int pop(Processor* proc, int primary_arg, int optional_arg)
 {
-    if (primary_arg == 0)                // 0 соответствует const
-    {
-        stack_pop(&proc->stack, &optional_arg);
-    }
-
     if (primary_arg == 1)
     {
         switch (optional_arg)

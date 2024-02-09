@@ -7,8 +7,8 @@
 const int NUMBER_OF_COMMANDS = 9;
 const int NUMBER_OF_REGISTRS = 4;
 
-const uint8_t REG_MASK = 0b1;
-const uint8_t CONST_MASK = 0b10;
+const byte_t REG_MASK = 0b1;
+const byte_t CONST_MASK = 0b10;
 
 struct BinBuf 
 {

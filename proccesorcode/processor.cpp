@@ -33,13 +33,15 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
 proc_errors execute(Processor* proc)
 {
     ASSERT(proc != nullptr);
-    printf (">>> размер буфера %d, команд должно быть: %d \n", proc->filedata.bufSize, proc->filedata.bufSize/5);
-    for (size_t pass = 0; pass < proc->filedata.bufSize; pass += sizeof(chunk_t))
+    printf (">>>размер буфера %d, команд должно быть: %d \n", proc->filedata.bufSize, proc->filedata.bufSize/4);
+
+    size_t pass = 0;
+
+    for (pass = 0; pass < proc->filedata.bufSize; pass += sizeof(chunk_t))
     {   
         printf(">>>Зашел в цикл\n");
         printf(">>>Команда номер: %d \n", pass);
         do_commands(proc, proc->filedata.buf[pass], &pass);
-
     }
 
     return proc_ok;
@@ -49,10 +51,32 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
 {
     ASSERT(proc != nullptr);
 
-    chunk_t cmd_id = (byte_t)text;
-    printf(">>>айди этой команды %d \n", cmd_id);
+    chunk_t cmd_id = text;
 
-    if ((*(byte_t*)&text + 1) == 0b0)
+
+    if (*((byte_t*)&text + 1) == CONST_MASK)
+    {
+        printf(">>>Нашел команду c аргументом!!!!!!!!\n");
+
+        *pass += sizeof(chunk_t);
+
+        check_arg(proc, proc->filedata.buf[*pass], cmd_id);
+
+        return proc_ok;
+    }
+
+    if (*((byte_t*)&text + 1) == REG_MASK)
+    {
+        printf(">>>Нашел команду c аргументом!!!!!!!!\n");
+
+        *pass += sizeof(chunk_t);
+
+        check_arg(proc, proc->filedata.buf[*pass], cmd_id);
+
+        return proc_ok;
+    }
+
+    if (*((byte_t*)&text + 1) == 0b0)
     {
         printf(">>>Нашел команду без аргументов\n");
 
@@ -96,30 +120,22 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
             default:
                 printf("Команда без аргумента не найдена\n");
         }
-        return proc_ok;
     }
-    else
-        if (((*(byte_t*)&text + 1) == CONST_MASK) || ((*(byte_t*)&text + 1) == REG_MASK))
-        {
-            printf(">>>Нашел команду c аргументом\n");
-            *pass += sizeof(chunk_t);
-            check_arg(proc, text, cmd_id);
-
-            return proc_ok;
-        }
-
+        return proc_ok;
 }
 
 void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
 {
+    printf("Найдена функция с аргументом \n");
+
     if (command_id == 5)
     {
-        if ((*(byte_t*)&text + 1) == CONST_MASK)
+        if ((*((byte_t*)&text + 1)) == CONST_MASK)
         {
             int const_tmp = (int)text;
             push(proc, 0, const_tmp);
         }
-        if ((*(byte_t*)&text + 1) == REG_MASK)
+        if ((*((byte_t*)&text + 1)) == REG_MASK)
         {
             int reg_tmp = (int)text;
             push(proc, 1, reg_tmp);
@@ -127,12 +143,12 @@ void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
     }
     if (command_id == 6)
     {
-        if ((*(byte_t*)&text + 1) == CONST_MASK)
+        if ((*((byte_t*)&text + 1)) == CONST_MASK)
         {
             int const_tmp = (int)text;
             pop(proc, 0, const_tmp);
         }
-        if ((*(byte_t*)&text + 1) == REG_MASK)
+        if ((*((byte_t*)&text + 1)) == REG_MASK)
         {
             int reg_tmp = (int)text;
             pop(proc, 1, reg_tmp);
