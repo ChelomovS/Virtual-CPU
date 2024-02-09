@@ -10,9 +10,6 @@ const int NUMBER_OF_REGISTRS = 4;
 const uint8_t REG_MASK = 0b1;
 const uint8_t CONST_MASK = 0b10;
 
-typedef uint32_t chunk_t;
-typedef uint8_t byte_t;
-
 struct BinBuf 
 {
     size_t capacity;
