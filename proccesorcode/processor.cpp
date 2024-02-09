@@ -13,7 +13,7 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
         fclose(translated_file);
         return proc_error;
     }
-    
+
     proc->filedata.buf = (byte_t*)calloc(proc->filedata.bufSize, sizeof(byte_t));
     fread(proc->filedata.buf, sizeof(byte_t), proc->filedata.bufSize, translated_file);
 
@@ -37,7 +37,6 @@ proc_errors execute(Processor* proc)
         do_commands(proc, proc->filedata.buf[pass], &pass);
     }
 
-    free(proc->filedata.buf);
     return proc_ok;
 }
 
@@ -45,7 +44,7 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
 {
     ASSERT(proc != nullptr);
 
-    int cmd_id = text; 
+    chunk_t cmd_id = text; 
 
     if ((*(byte_t*)&text + 1) == 0b0)
     {
@@ -89,29 +88,29 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
         }
 
 }
-void check_arg(Processor* proc, chunk_t text, int command_id)
+void check_arg(Processor* proc, chunk_t text, chunk_t command_id)
 {
     if (command_id == 5)
         if ((*(byte_t*)&text + 1) == CONST_MASK)
         {
-            int const_tmp = text;
+            int const_tmp = (int)text;
             push(proc, 0, const_tmp);
         }
         if ((*(byte_t*)&text + 1) == REG_MASK)
         {
-            int reg_tmp = text;
+            int reg_tmp = (int)text;
             push(proc, 1, reg_tmp);
         }
 
     if (command_id == 6)
         if ((*(byte_t*)&text + 1) == CONST_MASK)
         {
-            int const_tmp = text;
+            int const_tmp = (int)text;
             pop(proc, 0, const_tmp);
         }
         if ((*(byte_t*)&text + 1) == REG_MASK)
         {
-            int reg_tmp = text;
+            int reg_tmp = (int)text;
             pop(proc, 1, reg_tmp);
         }
 
@@ -124,14 +123,13 @@ void proc_destructor(Processor* proc)
     FileDataBinDtor(&proc->filedata);
     stack_destructor(&proc->stack);
 
-    
     proc->reg[0] = 0;
     proc->reg[1] = 0;
     proc->reg[2] = 0;
     proc->reg[3] = 0;
 }
 
-void proc_dump(Processor* const proc)
+void proc_dump(Processor* proc)
 {
     ASSERT(proc != nullptr);
 

@@ -11,9 +11,6 @@
 static const size_t STANDART_ALLOC_SIZE = 1000;
 static const size_t STANDART_REALLOC_COEF = 2;
 
-typedef uint32_t chunk_t;
-typedef uint8_t byte_t;
-
 struct Assembler
 {
     FileData filedata;

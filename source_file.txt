@@ -1,7 +1,4 @@
 push 2
 push rax 
-pop 3 
 add
-add
-pop rcx
 halt

@@ -2,8 +2,8 @@
 
 #define COPY_TO_BINBUF(A)\
         resize(assembler);\
-        memcpy(assembler->bin_buf.translated_code + assembler->bin_buf.size, &A, 4);\
-        assembler->bin_buf.size += sizeof(uint8_t);\
+        memcpy(assembler->bin_buf.translated_code + assembler->bin_buf.size, &A, sizeof(int));\
+        assembler->bin_buf.size += sizeof(chunk_t);\
 
 #define MAKE_MASK(A, MOVE, MASK)\
         *((byte_t*)&A + MOVE) = MASK;\
