@@ -83,7 +83,7 @@ proc_errors do_commands(Processor* proc, chunk_t text, size_t* pass)
     else 
         if (((*(byte_t*)&text + 1) == CONST_MASK) || ((*(byte_t*)&text + 1) == REG_MASK))
         {
-            pass += sizeof(chunk_t);
+            *pass += sizeof(chunk_t);
             check_arg(proc, text, cmd_id);
         }
 
