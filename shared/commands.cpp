@@ -157,7 +157,7 @@ int out(Stack* stack)
 
     stack_pop(stack, &pop_element);
 
-    printf("%d \n", pop_element);
+    printf("%d ВОТ ОНО\n", pop_element);
 
     return 1;
 }

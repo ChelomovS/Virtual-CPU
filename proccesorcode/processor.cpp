@@ -1,6 +1,10 @@
 #include "processor.h"
 #include "../shared/commands.h"
 
+#define ADRESS_BYTE(TEXT, PASS, BYTE_I)\
+    ((byte_t*)(TEXT) + *(PASS) * sizeof(chunk_t) + BYTE_I)
+
+
 proc_errors proc_constructor(Processor* proc, FILE* translated_file)
 {
     ASSERT(proc != nullptr);
@@ -12,6 +16,7 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
     {
         fclose(translated_file);
         fprintf(stderr, ">>>BAD SIZE BUF \n");
+
         return proc_error;
     }
 
@@ -33,11 +38,11 @@ proc_errors proc_constructor(Processor* proc, FILE* translated_file)
 proc_errors execute(Processor* proc)
 {
     ASSERT(proc != nullptr);
-    printf (">>>размер буфера %d, команд должно быть: %d \n", proc->filedata.bufSize, proc->filedata.bufSize/4);
+    printf(">>>размер буфера %d, команд должно быть: %d \n", proc->filedata.bufSize, proc->filedata.bufSize / 4);
 
     size_t pass = 0;
 
-    for (pass = 0; pass < proc->filedata.bufSize; pass += sizeof(chunk_t))
+    for (pass = 0; pass < proc->filedata.bufSize / sizeof(chunk_t);)
     {   
         printf(">>>Зашел в цикл\n");
         printf(">>>Команда номер: %d \n", pass);
@@ -50,36 +55,34 @@ proc_errors execute(Processor* proc)
 proc_errors do_commands(Processor* proc, chunk_t* text, size_t* pass)
 {
     ASSERT(proc != nullptr);
+    
+    byte_t cmd_id = (byte_t)*(ADRESS_BYTE(text, pass, 0));
 
-    byte_t cmd_id = (byte_t)*text;
+    printf ("id: %d\n", cmd_id);
 
-
-    if (*(((byte_t*)&text) + 1) == CONST_MASK)
+    if (*ADRESS_BYTE(text, pass, 1) == CONST_MASK) 
     {
         printf(">>>Нашел команду c аргументом!!!!!!!!\n");
 
-        *pass += sizeof(chunk_t);
-
-        check_arg(proc, proc->filedata.buf + *pass, cmd_id, pass);
+        check_arg(proc, proc->filedata.buf, cmd_id, pass);
 
         return proc_ok;
     }
 
-    if (*(((byte_t*)&text) + 1) == REG_MASK)
+    if (*ADRESS_BYTE(text, pass, 1) == REG_MASK)
     {
         printf(">>>Нашел команду c аргументом!!!!!!!!\n");
 
-        *pass += sizeof(chunk_t);
-
-        check_arg(proc, proc->filedata.buf + *pass, cmd_id, pass);
+        check_arg(proc, proc->filedata.buf, cmd_id, pass);
 
         return proc_ok;
     }
 
-    if (*((byte_t*)&text + 1) == 0b0)
+    if (*ADRESS_BYTE(text, pass, 1) == 0b0)
     {
-        *pass += sizeof(chunk_t);
         printf(">>>Нашел команду без аргументов\n");
+
+        (*pass)++;
 
         switch (cmd_id)
         {
@@ -109,7 +112,7 @@ proc_errors do_commands(Processor* proc, chunk_t* text, size_t* pass)
                 break;
 
             case cmd_array[8].id:
-                printf(">>>Нашел ou\n");
+                printf(">>>Нашел out\n");
                 out(&proc->stack);
                 break;
 
@@ -128,31 +131,48 @@ proc_errors do_commands(Processor* proc, chunk_t* text, size_t* pass)
 void check_arg(Processor* proc, chunk_t* text, byte_t command_id, size_t* pass)
 {
     printf("Найдена функция с аргументом \n");
-    *pass += sizeof(chunk_t);
+
     if (command_id == 5)
     {
-        if (*((byte_t*)text + 1) == CONST_MASK)
+        if (*ADRESS_BYTE(text, pass, 1) == CONST_MASK)
         {
-            int const_tmp = (byte_t)*text;
-            push(proc, 0, const_tmp);
+            (*pass)++;
+            printf("ПУШУ КОНСТ\n");
+
+            int const_tmp = (byte_t)*(ADRESS_BYTE(text, pass, 0));
+            printf("%d\n", const_tmp);
+            push(proc, 1, const_tmp);
+            (*pass)++;
         }
-        if (*((byte_t*)text + 1) == REG_MASK)
+
+        if (*ADRESS_BYTE(text, pass, 1) == REG_MASK)
         {
-            int reg_tmp = (byte_t)*text;
-            push(proc, 1, reg_tmp);
+            (*pass)++;
+            printf("ПУШУ REGGG\n");
+
+            int reg_tmp = (byte_t)*(ADRESS_BYTE(text, pass, 0));
+            push(proc, 0, reg_tmp);
+            (*pass)++;
         }
     }
     if (command_id == 6)
     {
-        if (*((byte_t*)text + 1) == CONST_MASK)
+        if (*ADRESS_BYTE(text, pass, 1) == CONST_MASK)
         {
-            int const_tmp = (byte_t)*text;
+            (*pass)++;
+            printf("Поп конст\n");
+            int const_tmp = (byte_t)*(ADRESS_BYTE(text, pass, 0));
             pop(proc, 0, const_tmp);
+            (*pass)++;
         }
-        if (*((byte_t*)text + 1) == REG_MASK)
+
+        if (*ADRESS_BYTE(text, pass, 1) == REG_MASK)
         {
-            int reg_tmp = (byte_t)*text;
+            (*pass)++;
+            printf("Поп REGGG\n");
+            int reg_tmp = (byte_t)*(ADRESS_BYTE(text, pass, 0));
             pop(proc, 1, reg_tmp);
+            (*pass)++;
         }
     }
 }
