@@ -7,7 +7,7 @@ size_t GetFileSize(FILE* file)
 
     fseek(file, 0, SEEK_END);
 
-    size_t size = ftell(file);
+    size_t size = (size_t)ftell(file);
 
     fseek(file, 0, SEEK_SET);
 

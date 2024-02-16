@@ -8,6 +8,9 @@
 #include "colors.h"
 
 #ifndef NDEBUG
+#define DEBUG_PRINT(...)\
+    fprintf(stderr, __VA_ARGS__);
+
 #define ASSERT(a)                                                              \
     do                                                                         \
     {                                                                          \
@@ -22,7 +25,8 @@
     }                                                                          \
     while (0);
 #else
-#define ASSERT(a)
+#define ASSERT(a) ;
+#define DEBUG_PRINT(...) ;
 #endif
 
 

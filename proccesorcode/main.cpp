@@ -1,16 +1,19 @@
 #include "processor.h"
 
 
-int main()
+int main(const int argc, const char** argv)
 {   
     Processor proc = {};
+    proc_errors error = proc_ok;
 
-    FILE* translated_file = fopen("translator_file.txt", "r");
+    error = proc_constructor(&proc, argc, argv);
+    if (error == proc_ok)
+    {
+        error = execute(&proc);
+    }
 
-    proc_constructor(&proc, translated_file);
-
-    execute(&proc);
-
+    check_errors(error);
+    
     proc_destructor(&proc);
 
     return 0;

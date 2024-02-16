@@ -6,15 +6,18 @@
 int main(const int argc, const char** argv)
 {
     Assembler assembler = {};
-    
-    asm_ctor(&assembler, argc, argv);
 
-    assemble(&assembler);
+    asm_errors error = asm_ok;
 
-    translate_code_to_file(&assembler);
+    error = asm_ctor(&assembler, argc, argv);
+    if(error == asm_ok)
+    {
+        error = assemble(&assembler, argc, argv);
+    }
+
+    check_errors(error);
 
     asm_dtor(&assembler);
 
     return 0;
-
 }
