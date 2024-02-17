@@ -48,37 +48,31 @@ constexpr static command cmd_array[] = {
     {
         .name = "halt",
         .id = 0,
-        .have_args = false
     },
 
     {
         .name = "add",
         .id = 1,
-        .have_args = false
     },
 
     {
         .name = "sub",
         .id = 2,
-        .have_args = true
     },
 
     {
         .name = "mul",
         .id = 3,
-        .have_args = false
     },
 
     {
         .name = "div",
         .id = 4,
-        .have_args = false
     },
 
     {
         .name = "push",
         .id = 5,
-        .have_args = true
     },
 
     {
@@ -90,13 +84,11 @@ constexpr static command cmd_array[] = {
     {
         .name = "in",
         .id = 7,
-        .have_args = false
     },
 
     {
         .name = "out",
         .id = 8,
-        .have_args = false
     }
 };
 

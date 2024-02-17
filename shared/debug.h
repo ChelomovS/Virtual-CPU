@@ -32,7 +32,6 @@
 
 #define $ fprintf(stderr, RED ">>> %s (%d) %s\n" WHITE,                        \
                   __FILE__, __LINE__, __PRETTY_FUNCTION__);
-
 #define PRINT_NUM(num)     fprintf(stderr, "[%d] %s %lld\n", __LINE__, #num, num);
 #define PRINT_POINTER(ptr) fprintf(stderr, "[%d] %s %p\n", __LINE__, #ptr, ptr);
 #define PRINT_INTX(num)    fprintf(stderr, "[%d] %s %x\n", __LINE__, #num, num);

@@ -1,7 +1,5 @@
-push 6 
-pop rax
-push rax
 push 1
-mul
-out
+pop rax 
+push rax
+out 
 halt

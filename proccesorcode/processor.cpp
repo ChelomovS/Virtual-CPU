@@ -59,7 +59,6 @@ proc_errors do_commands(Processor* proc)
 
     if ((*(proc->filedata.buf + proc->ip) & CONST_MASK) == CONST_MASK) 
     {
-        $
         proc->ip += sizeof(cmd_t);
         fprintf(stderr, "нашел команду с константой \n");
         check_arg(proc, proc->filedata.buf, cmd_raw);
