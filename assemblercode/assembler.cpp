@@ -85,12 +85,12 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     ASSERT(line_of_code != nullptr);
     ASSERT(assembler    != nullptr);
     
-    char command_name[10] = "";
-    char arg_str[10]      = "";
-    long arg_num = 0;
-    imm_t const_num = 0;
-    reg_t reg_num   = 0;
-    cmd_t cmd_form  = 0;
+    char  command_name[10] = "";
+    char  arg_str[10]      = "";
+    long  arg_num          = 0;
+    imm_t const_num        = 0;
+    reg_t reg_num          = 0;
+    cmd_t cmd_form         = 0;
 
     if (sscanf(line_of_code, "%s", command_name) == 1)
     {
@@ -98,7 +98,6 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
             if (strcmp(#cmd_name, command_name) == 0)   \
             {                                           \
                 cmd_form = id;                          \
-                printf(">> id: %d \n",id);                        \
             }                                           \
             else                                       
         // end def
@@ -118,7 +117,7 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         const_num = (imm_t)arg_num; 
         COPY_TO_BINBUF_CONST(const_num); 
     } 
-    
+
     else if (sscanf(line_of_code, "%s %s", command_name, arg_str) == 2)
     {
         MAKE_MASK(cmd_form, REG_MASK);
@@ -162,6 +161,18 @@ asm_errors assemble(Assembler* assembler, const int argc, const char** argv)
 
         pass_text++;
     }
+
+    char** pass_text = assembler->filedata.text;
+
+    while (pass_text < assembler->filedata.text + assembler->filedata.textSize)
+    {
+        error = translate_to_code(assembler, *pass_text);
+        if (error != asm_ok)
+            return error;
+
+        pass_text++;
+    }
+
 
     return (translate_code_to_file(assembler, argv));
 }

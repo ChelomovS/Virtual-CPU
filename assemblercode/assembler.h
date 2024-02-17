@@ -12,11 +12,20 @@
 static const size_t STANDART_ALLOC_SIZE = 256;
 static const size_t STANDART_REALLOC_COEF = 2;
 
+typedef size_t jump_adress;
+
+struct name_table 
+{
+    char* label_name;
+    jump_adress pos;
+};
+
 struct Assembler
 {
     FileData filedata;
     FILE* trans_file;
     BinBuf bin_buf;
+    name_table* labels[]; 
 };
 
 enum asm_errors

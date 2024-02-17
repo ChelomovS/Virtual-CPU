@@ -77,41 +77,22 @@ proc_errors do_commands(Processor* proc)
     {
         fprintf(stderr, "нашел команду без аргумента \n");
         proc->ip += sizeof(cmd_t);
-        switch (cmd_id)
-        {
-            case cmd_array[0].id:
-                halt();
-                break;
-
-            case cmd_array[1].id:
-                add(&proc->stack);
-                break;
-
-            case cmd_array[2].id:
-                sub(&proc->stack);
-                break;
-
-            case cmd_array[3].id:
-                mul(&proc->stack);
-                break;
-
-            case cmd_array[4].id:
-                div(&proc->stack);
-                break;
-
-            case cmd_array[8].id:
-                out(&proc->stack);
-                break;
-
-            case cmd_array[7].id:
-                in(&proc->stack);
-                break;
         
-            default:
+        #define DEF_CMD(cmd_name, id, is_jump, ...) \
+            case id: \
+                __VA_ARGS__ \
                 break;
-        }
+        //end of def
+        
+        switch (cmd_id) 
+        {
+            #include "../shared/cmd_def.h"
+
+            default:
+                ASSERT(0 && ":(");
+                break;
+        } 
     }
-        return proc_ok;
 }
 
 void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
