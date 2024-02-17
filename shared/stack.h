@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #include "debug.h"
-#include "stackConfig.h"
+#include "stack_config.h"
 
 enum stack_error
 {

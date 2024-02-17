@@ -1,5 +1,5 @@
 #include "stack.h"
-#include "stackConfig.h"
+#include "stack_config.h"
 
 stack_error stack_constuctor(Stack* stack, size_t init_capacity)
 {
@@ -81,6 +81,6 @@ void stack_dump(Stack* stack)
 
     for (size_t i = 0; i < stack->size; i++)
     {
-        printf(">>> Element %d \n", stack->data[i]); 
+        printf(">>> Element %ld \n", stack->data[i]); 
     }
 }

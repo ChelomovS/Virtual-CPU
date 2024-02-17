@@ -1,19 +1,33 @@
 #include "assembler.h"
 
-#define COPY_TO_BINBUF(A)\
+#define COPY_TO_BINBUF_CONST(A)\
         resize(assembler);\
         memcpy(assembler->bin_buf.translated_code\
-               + assembler->bin_buf.size, &A, sizeof(int));\
-        assembler->bin_buf.size += sizeof(chunk_t);\
+               + assembler->bin_buf.size, &A, sizeof(imm_t));\
+        assembler->bin_buf.size += sizeof(imm_t);\
 
-#define MAKE_MASK(A, MOVE, MASK)\
-        *((byte_t*)&A + MOVE) = MASK;\
+
+#define COPY_TO_BINBUF_COMMAND(A)\
+        resize(assembler);\
+        memcpy(assembler->bin_buf.translated_code\
+               + assembler->bin_buf.size, &A, sizeof(cmd_t));\
+        assembler->bin_buf.size += sizeof(cmd_t);\
+
+#define COPY_TO_BINBUF_REG(A)\
+        resize(assembler);\
+        memcpy(assembler->bin_buf.translated_code\
+               + assembler->bin_buf.size, &A, sizeof(reg_t));\
+        assembler->bin_buf.size += sizeof(reg_t);\
+
+#define MAKE_MASK(A, MASK)\
+        A |= MASK;\
+
 
 asm_errors resize(Assembler* assembler)
 {
     ASSERT(assembler != nullptr);
 
-    if (assembler->bin_buf.size < assembler->bin_buf.capacity - sizeof(chunk_t))
+    if (assembler->bin_buf.size < assembler->bin_buf.capacity - sizeof(imm_t))
         return asm_ok;
 
     byte_t* tmp = assembler->bin_buf.translated_code;
@@ -74,21 +88,27 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     
     char command_name[10] = "";
     char arg_str[10] = "";
-    chunk_t arg_num = 0;
+    long arg_num = 0;
+    imm_t const_num = 0;
+    reg_t reg_num = 0;
+    cmd_t cmd_form = 0;
 
-    if (sscanf(line_of_code, "%s %d", command_name, &arg_num) == 2)
+    if (sscanf(line_of_code, "%s %ld", command_name, &arg_num) == 2)
     {
         bool got_valid_cmd = false;
         for (size_t pass = 0; pass < NUMBER_OF_COMMANDS; pass++) 
         {
             if (strcmp(cmd_array[pass].name, command_name) == 0)
             {
-                chunk_t cmd_form = cmd_array[pass].id; 
-                MAKE_MASK(cmd_form, 1, CONST_MASK);
-                COPY_TO_BINBUF(cmd_form);
+                cmd_form = cmd_array[pass].id;
 
-                chunk_t arg_form = arg_num;
-                COPY_TO_BINBUF(arg_form);
+                MAKE_MASK(cmd_form, CONST_MASK);
+
+                const_num = (imm_t)arg_num;
+
+                COPY_TO_BINBUF_COMMAND(cmd_form);
+
+                COPY_TO_BINBUF_CONST(const_num);
 
                 got_valid_cmd = true;
 
@@ -100,8 +120,9 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         { 
             return asm_syntax; 
         }
+        return asm_ok;
     }
-    else
+
     if (sscanf(line_of_code, "%s %s", command_name, arg_str) == 2)
     {
         bool got_valid_cmd = false;
@@ -110,9 +131,10 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         {
             if (strcmp(cmd_array[pass].name, command_name) == 0)
             {
-                chunk_t cmd_form = cmd_array[pass].id;
-                MAKE_MASK(cmd_form, 1, REG_MASK)
-                COPY_TO_BINBUF(cmd_form);
+                cmd_form = cmd_array[pass].id;
+
+                MAKE_MASK(cmd_form, REG_MASK);
+                COPY_TO_BINBUF_COMMAND(cmd_form);
 
                 got_valid_cmd = true;
             
@@ -123,9 +145,9 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         {
             if (strcmp(reg_array[pass].name, arg_str) == 0)
             {
-                chunk_t reg_form = reg_array[pass].id;
+                reg_num = (reg_t)reg_array[pass].id;
                 
-                COPY_TO_BINBUF(reg_form);
+                COPY_TO_BINBUF_REG(reg_num);
 
                 got_valid_cmd = true;
 
@@ -136,8 +158,10 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         { 
             return asm_syntax; 
         }
+
+        return asm_ok;
     } 
-    else 
+
     if (sscanf(line_of_code, "%s", command_name) == 1)
     {
         bool got_valid_cmd = false;
@@ -146,9 +170,9 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         {
             if (strcmp(cmd_array[pass].name, command_name) == 0)
             {
-                chunk_t cmd_form = cmd_array[pass].id;
+                cmd_form  = cmd_array[pass].id;
 
-                COPY_TO_BINBUF(cmd_form);
+                COPY_TO_BINBUF_COMMAND(cmd_form);
 
                 got_valid_cmd = true;
 
@@ -190,6 +214,7 @@ asm_errors assemble(Assembler* assembler, const int argc, const char** argv)
 asm_errors translate_code_to_file(Assembler* assembler, const char** argv)
 {
     ASSERT(assembler != nullptr);
+
     if(argv[2] == nullptr)
         return asm_bad_open_file_for_writing;
 

@@ -5,7 +5,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "../shared/fileLib.h"
+#include "../shared/file_lib.h"
+#include "../shared/file_lib_bin.h"
 #include "../shared/commands.h"
 
 static const size_t STANDART_ALLOC_SIZE = 256;

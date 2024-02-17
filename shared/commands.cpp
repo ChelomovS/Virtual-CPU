@@ -9,8 +9,8 @@ int add(Stack* stack)
 {
     ASSERT(stack != nullptr);
 
-    int first_tmp = 0;
-    int second_tmp = 0;
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
 
     stack_pop(stack, &first_tmp);
     stack_pop(stack, &second_tmp);
@@ -23,8 +23,8 @@ int sub(Stack* stack)
 {
     ASSERT(stack != nullptr);
 
-    int first_tmp = 0;
-    int second_tmp = 0;
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
 
     stack_pop(stack, &first_tmp);
     stack_pop(stack, &second_tmp);
@@ -37,8 +37,8 @@ int mul(Stack* stack)
 {
     ASSERT(stack != nullptr);
 
-    int first_tmp = 0;
-    int second_tmp = 0;
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
 
     stack_pop(stack, &first_tmp);
     stack_pop(stack, &second_tmp);
@@ -51,8 +51,8 @@ int div(Stack* stack)
 {
     ASSERT(stack != nullptr);
 
-    int first_tmp = 0;
-    int second_tmp = 0;
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
 
     stack_pop(stack, &first_tmp);
     stack_pop(stack, &second_tmp);
@@ -61,14 +61,14 @@ int div(Stack* stack)
     return 0;
 }
 
-int push(Processor* proc, int primary_arg, int optional_arg)
+int push(Processor* proc, int primary_arg, long optional_arg)
 {
-    if (primary_arg == 01)             
+    if (primary_arg == 1)             
     {
         stack_push(&proc->stack, optional_arg);
     }
 
-    if (primary_arg == 02)
+    if (primary_arg == 2)
     {
         switch (optional_arg)
         {
@@ -103,11 +103,6 @@ int push(Processor* proc, int primary_arg, int optional_arg)
 
 int pop(Processor* proc, int primary_arg, int optional_arg)
 {
-    if (primary_arg == 0)                // 0 соответствует const
-    {
-        stack_pop(&proc->stack, &optional_arg);
-    }
-
     if (primary_arg == 1)
     {
         switch (optional_arg)
@@ -143,21 +138,21 @@ int pop(Processor* proc, int primary_arg, int optional_arg)
 
 int in(Stack* stack)
 {
-    int tmp = 0;
+    long tmp = 0;
 
-    scanf("%d", &tmp);
+    scanf("%ld", &tmp);
     stack_push(stack, tmp);
 
-    return 1;
+    return 0;
 }
 
 int out(Stack* stack)
 {
-    int pop_element = 0;
+    long pop_element = 0;
 
     stack_pop(stack, &pop_element);
 
-    printf("%d\n", pop_element);
+    printf("%ld\n", pop_element);
 
-    return 1;
+    return 0;
 }

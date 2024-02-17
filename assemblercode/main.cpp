@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "assembler.h"
-#include "../shared/fileLib.h"
 
 int main(const int argc, const char** argv)
 {

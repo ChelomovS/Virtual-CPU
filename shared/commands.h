@@ -2,13 +2,19 @@
 #define COMMANDS_H
 
 #include "stack.h"
-#include "fileLib.h"
+#include "file_lib_bin.h"
 
 const int NUMBER_OF_COMMANDS = 9;
 const int NUMBER_OF_REGISTRS = 4;
 
-const byte_t REG_MASK = 0b1;
-const byte_t CONST_MASK = 0b10;
+const byte_t REG_MASK   = 0b010'00000;
+const byte_t CONST_MASK = 0b100'00000;
+const byte_t CMD_MASK   = 0b000'11111;
+const byte_t NO_MASK    = 0b000;
+
+typedef uint8_t reg_t;
+typedef uint8_t cmd_t;
+typedef uint64_t imm_t;
 
 struct BinBuf 
 {
@@ -21,7 +27,8 @@ struct Processor
 {
     Stack stack;
     FileDataBin filedata;
-    int reg[4];
+    long reg[4];
+    size_t ip;
 };
 
 struct command 
@@ -120,7 +127,7 @@ int add(Stack* stack);
 int sub(Stack* stack);
 int mul(Stack* stack);
 int div(Stack* stack);
-int push(Processor* proc, int primary_arg, int optional_arg);
+int push(Processor* proc, int primary_arg, long optional_arg);
 int pop(Processor* proc, int primary_arg, int optional_arg);
 int in(Stack* stack);
 int out(Stack* stack);
