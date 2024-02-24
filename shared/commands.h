@@ -9,6 +9,7 @@ const int NUMBER_OF_REGISTRS = 4;
 
 const byte_t REG_MASK   = 0b010'00000;
 const byte_t CONST_MASK = 0b100'00000;
+const byte_t MEM_MASK   = 0b001'00000;
 const byte_t CMD_MASK   = 0b000'11111;
 const byte_t NO_MASK    = 0b000;
 
@@ -28,7 +29,7 @@ struct Processor
     Stack stack;
     FileDataBin filedata;
     long reg[4];
-    size_t ip;
+    long ip;
 };
 
 struct command 
@@ -42,54 +43,6 @@ struct reg
 {
     const char* name;
     const byte_t id; 
-};
-
-constexpr static command cmd_array[] = {
-    {
-        .name = "halt",
-        .id = 0,
-    },
-
-    {
-        .name = "add",
-        .id = 1,
-    },
-
-    {
-        .name = "sub",
-        .id = 2,
-    },
-
-    {
-        .name = "mul",
-        .id = 3,
-    },
-
-    {
-        .name = "div",
-        .id = 4,
-    },
-
-    {
-        .name = "push",
-        .id = 5,
-    },
-
-    {
-        .name = "pop",
-        .id = 6,
-        .have_args = true
-    },
-
-    {
-        .name = "in",
-        .id = 7,
-    },
-
-    {
-        .name = "out",
-        .id = 8,
-    }
 };
 
 constexpr static reg reg_array[] = {
@@ -123,7 +76,12 @@ int push(Processor* proc, int primary_arg, long optional_arg);
 int pop(Processor* proc, int primary_arg, int optional_arg);
 int in(Stack* stack);
 int out(Stack* stack);
-
-
+int jmp(Processor* proc, long optional_arg);
+int je(Processor* proc, long optional_arg);
+int jne(Processor* proc, long optional_arg);
+int ja(Processor* proc, long optional_arg);
+int jea(Processor* proc, long optional_arg);
+int jb(Processor* proc, long optional_arg);
+int jeb(Processor* proc, long optional_arg);
 
 #endif // COMMANDS_H

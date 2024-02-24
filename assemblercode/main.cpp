@@ -11,7 +11,7 @@ int main(const int argc, const char** argv)
     error = asm_ctor(&assembler, argc, argv);
     if(error == asm_ok)
     {
-        error = assemble(&assembler, argc, argv);
+        error = assemble(&assembler, argv);
     }
 
     check_errors(error);

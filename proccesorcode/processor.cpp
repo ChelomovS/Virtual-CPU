@@ -57,6 +57,14 @@ proc_errors do_commands(Processor* proc)
     byte_t cmd_raw = *(proc->filedata.buf + proc->ip); 
     byte_t cmd_id = cmd_raw & CMD_MASK;
 
+    if ((cmd_id >= 16) && (cmd_id <= 22))
+    {
+        proc->ip += sizeof(cmd_t);
+        fprintf(stderr, "нашел команду с константой \n");
+        check_arg(proc, proc->filedata.buf, cmd_raw);
+        return proc_ok;
+    }
+
     if ((*(proc->filedata.buf + proc->ip) & CONST_MASK) == CONST_MASK) 
     {
         proc->ip += sizeof(cmd_t);
@@ -65,7 +73,7 @@ proc_errors do_commands(Processor* proc)
         return proc_ok;
     }
 
-    if ((*(proc->filedata.buf + proc->ip) & REG_MASK) == REG_MASK)
+    if ((*(proc->filedata.buf + proc->ip) & REG_MASK) == REG_MASK) // NOTE macro
     {
         proc->ip += sizeof(cmd_t);
         fprintf(stderr, "нашел команду с reg \n");
@@ -101,7 +109,6 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
     
     if (command_id == 5)
     {
-        
         fprintf(stderr, "Чекаю аргумент\n");
 
         if ((cmd_raw & CONST_MASK) == CONST_MASK)
@@ -124,6 +131,7 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
             proc->ip += sizeof(reg_t);
         }
     }
+    else
     if (command_id == 6)
     {
         if ((cmd_raw & REG_MASK) == REG_MASK)
@@ -135,6 +143,50 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 
             proc->ip += sizeof(reg_t);
         }
+    }
+    else
+    if ((command_id >= 16) && (command_id <= 22))
+    {
+        fprintf(stderr, "Чекаю аргумент\n");
+        fprintf(stderr, "о конста\n");
+        long const_tmp = *(long*)(text + proc->ip);
+
+        if (command_id == 16)
+        {
+            jmp(proc, const_tmp);
+        }
+
+        if (command_id == 17)
+        {
+            je(proc, const_tmp);
+        }
+
+        if (command_id == 18)
+        {
+            jne(proc, const_tmp);
+        }
+
+        if (command_id == 19)
+        {
+            ja(proc, const_tmp);
+        }
+
+        if (command_id == 20)
+        {
+            jea(proc, const_tmp);
+        }
+
+        if (command_id == 21)
+        {
+            jb(proc, const_tmp);
+        }
+
+        if (command_id == 22)
+        {
+            jeb(proc, const_tmp);
+        }
+
+        proc->ip += sizeof(imm_t);
     }
 }
 
@@ -149,18 +201,6 @@ void proc_destructor(Processor* proc)
     proc->reg[1] = 0;
     proc->reg[2] = 0;
     proc->reg[3] = 0;
-}
-
-void proc_dump(Processor* proc)
-{
-    ASSERT(proc != nullptr);
-
-    stack_dump(&proc->stack);
-
-    for (size_t reg_number = 0; reg_number < NUMBER_OF_REGISTRS; reg_number++)
-    {
-        fprintf(stderr, "%ld \n", proc->reg[reg_number]);
-    }   
 }
 
 void check_errors(proc_errors error)

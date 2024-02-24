@@ -156,3 +156,114 @@ int out(Stack* stack)
 
     return 0;
 }
+
+int jmp(Processor* proc, long optional_arg)
+{
+    printf("proc ip: %d \n", proc->ip);
+    printf("ДЖАААМППППП \n");
+    proc->ip = optional_arg;
+    printf("proc ip: %d \n");
+    return 0;
+}
+
+int je(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp == second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}
+
+int jne(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp != second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}
+
+int ja(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp < second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}
+
+int jea(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp <= second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}
+
+int jb(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp > second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}
+
+int jeb(Processor* proc, long optional_arg)
+{
+    elem_t first_tmp = 0;
+    elem_t second_tmp = 0;
+
+    stack_pop(&proc->stack, &first_tmp);
+    stack_pop(&proc->stack, &second_tmp);
+
+    if (first_tmp >= second_tmp)
+        proc->ip = optional_arg;
+
+    stack_push(&proc->stack, second_tmp);
+    stack_push(&proc->stack, first_tmp);
+
+    return 0;
+}

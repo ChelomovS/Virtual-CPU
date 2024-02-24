@@ -51,10 +51,13 @@ void SwapChars(FileData* fileData)
     ASSERT(fileData != nullptr);
     for (size_t i = 0; i < fileData->bufSize; i++)
     {
-        if (fileData->buf[i] == '\n') 
-        {
-            fileData->buf[i] = '\0';
-        }
+        // if (fileData->buf[i] == '\n') 
+        // {
+        //     fileData->buf[i] = '\0';
+        // }
+        // equvalent
+        fileData->buf[i] = '\0' * (fileData->buf[i] == '\n') 
+                           + fileData->buf[i] * (fileData->buf[i] != '\n');
     }
 }
 

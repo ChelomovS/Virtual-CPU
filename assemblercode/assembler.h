@@ -14,10 +14,11 @@ static const size_t STANDART_REALLOC_COEF = 2;
 
 typedef size_t jump_adress;
 
-struct name_table 
+struct label 
 {
-    char* label_name;
-    jump_adress pos;
+    char* lbl_start;
+    size_t lbl_size;
+    size_t lbl_pozition;
 };
 
 struct Assembler
@@ -25,7 +26,9 @@ struct Assembler
     FileData filedata;
     FILE* trans_file;
     BinBuf bin_buf;
-    name_table* labels[]; 
+    size_t pass;  
+    label* name_table;
+    size_t number_labels;
 };
 
 enum asm_errors
@@ -40,10 +43,10 @@ enum asm_errors
 
 asm_errors asm_ctor(Assembler* assembler, const int argc, const char** argv);
 void asm_dtor(Assembler* assembler);
-asm_errors assemble(Assembler* assembler, const int argc, const char** argv);
+asm_errors assemble(Assembler* assembler, const char** argv);
 asm_errors translate_to_code(Assembler* assembler,char* line_of_text);
 asm_errors resize(Assembler* assembler);
-asm_errors translate_code_to_file(Assembler* assembler, const char** argv);
+asm_errors copy_code_to_file(Assembler* assembler, const char** argv);
 void check_errors(asm_errors error);
 
 #endif // ASSEMBLER_H
