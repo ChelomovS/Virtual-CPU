@@ -29,7 +29,7 @@ struct Processor
     Stack stack;
     FileDataBin filedata;
     long reg[4];
-    long ip;
+    size_t ip;
 };
 
 struct command 

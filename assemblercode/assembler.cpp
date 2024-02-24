@@ -112,44 +112,17 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     cmd_t cmd_form         = 0;
     bool is_jump_found     = false;
 
-    //DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
-    if (assembler->pass == 0)
-    {
-        printf ("Первый проход \n");
-    }
-
-    if (assembler->pass == 1)
-    {
-        printf ("Второй проход \n");
-    }
-
     // поиск метки при первом проходе
-
         char* pos_label = strchr(line_of_code, ':');
         if (pos_label != nullptr)
         {
             if (assembler->pass == 0)
             {
-                // assembler->name_table[assembler->number_labels].lbl_size =
-                //                              (size_t)(pos_label - line_of_code);
-                // assembler->name_table[assembler->number_labels].lbl_start =
-                //                              pos_label - assembler->name_table
-                //                                     [assembler->number_labels].lbl_size;
                 assembler->name_table[assembler->number_labels] = {line_of_code, (size_t)(pos_label - line_of_code), assembler->bin_buf.size};
-                printf("%s \n", pos_label);
-                printf("%d \n", assembler->name_table[assembler->number_labels].lbl_size);
-                printf("%d \n", assembler->name_table[0].lbl_size);
-                printf("%s \n", assembler->name_table[assembler->number_labels].lbl_start);
-                printf("lbl_start %s \n", assembler->name_table[assembler->number_labels].lbl_start);
-
-                // assembler->name_table[assembler->number_labels].lbl_size = (size_t)(pos_label);
-
                 assembler->number_labels++;
             }
             return asm_ok;
         } 
-
-
 
     // кодогенерация
     if (sscanf(line_of_code, "%s", command_name) == 1)
@@ -173,7 +146,6 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     // есть числовой аргумент
     if (sscanf(line_of_code, "%s %ld", command_name, &arg_num) == 2)
     {
-        printf("Найдена команда с числом %s \n", command_name);
         MAKE_MASK(cmd_form, CONST_MASK);
         COPY_TO_BINBUF_COMMAND(cmd_form);
 
@@ -186,13 +158,10 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     {
         if (is_jump_found)
         {
-            printf("Найден джамп: %s аргумент: %s \n", command_name, arg_str);
-
             COPY_TO_BINBUF_COMMAND(cmd_form);
 
             if (assembler->pass == 0) // первый проход
             {
-                printf("записываю в джамп 0 \n");
                 const_num = (imm_t)0;
             }
             else 
@@ -200,14 +169,9 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
             {
                 for (size_t label_counter = 0; label_counter < assembler->number_labels; label_counter++)
                 {
-                    printf("ищем метку в таблице \n");
-                    printf("метка: %s \n", assembler->name_table[label_counter].lbl_start);
-                    printf("аргумент: %s \n", arg_str);
-                    printf("размер метки: %d \n", assembler->name_table[0].lbl_size);
                     if (strncmp(assembler->name_table[label_counter].lbl_start, arg_str,
                                          assembler->name_table[label_counter].lbl_size) == 0)
                     {
-                        printf("записал метку %s \n", assembler->name_table[label_counter].lbl_start);
                         const_num = (imm_t)(assembler->name_table[label_counter].lbl_pozition);
                         break;
                     }
@@ -221,7 +185,6 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
         {
             if (strcmp(reg_array[pass].name, arg_str) == 0)
             {
-                printf("записываю регистр %s \n", arg_str);
                 MAKE_MASK(cmd_form, REG_MASK);
                 COPY_TO_BINBUF_COMMAND(cmd_form);
                 reg_num = (reg_t)reg_array[pass].id;
@@ -236,7 +199,6 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     else
     if (sscanf(line_of_code, "%s", command_name) == 1)
     {
-        printf("Найдена команда без аргумента %s\n", command_name);
         COPY_TO_BINBUF_COMMAND(cmd_form);
     }
 

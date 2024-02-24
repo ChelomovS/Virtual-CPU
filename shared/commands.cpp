@@ -152,17 +152,14 @@ int out(Stack* stack)
 
     stack_pop(stack, &pop_element);
 
-    printf("%ld\n", pop_element);
+    printf("%ld \n", pop_element);
 
     return 0;
 }
 
 int jmp(Processor* proc, long optional_arg)
 {
-    printf("proc ip: %d \n", proc->ip);
-    printf("ДЖАААМППППП \n");
     proc->ip = optional_arg;
-    printf("proc ip: %d \n");
     return 0;
 }
 

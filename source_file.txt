@@ -1,5 +1,6 @@
-push 1
-pop rax 
-push rax
-out 
+in
+jmp label
+in
+label:
+out
 halt

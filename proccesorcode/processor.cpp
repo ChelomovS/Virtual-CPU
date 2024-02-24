@@ -40,7 +40,6 @@ proc_errors execute(Processor* proc)
 
     while (proc->ip < proc->filedata.bufSize)
     {   
-        fprintf(stderr, "вошел в цикл \n");
         do_commands(proc);
     }
 
@@ -60,7 +59,6 @@ proc_errors do_commands(Processor* proc)
     if ((cmd_id >= 16) && (cmd_id <= 22))
     {
         proc->ip += sizeof(cmd_t);
-        fprintf(stderr, "нашел команду с константой \n");
         check_arg(proc, proc->filedata.buf, cmd_raw);
         return proc_ok;
     }
@@ -68,7 +66,6 @@ proc_errors do_commands(Processor* proc)
     if ((*(proc->filedata.buf + proc->ip) & CONST_MASK) == CONST_MASK) 
     {
         proc->ip += sizeof(cmd_t);
-        fprintf(stderr, "нашел команду с константой \n");
         check_arg(proc, proc->filedata.buf, cmd_raw);
         return proc_ok;
     }
@@ -76,16 +73,13 @@ proc_errors do_commands(Processor* proc)
     if ((*(proc->filedata.buf + proc->ip) & REG_MASK) == REG_MASK) // NOTE macro
     {
         proc->ip += sizeof(cmd_t);
-        fprintf(stderr, "нашел команду с reg \n");
         check_arg(proc, proc->filedata.buf, cmd_raw);
         return proc_ok;
     }
 
     if ((*(proc->filedata.buf + proc->ip) & NO_MASK) == NO_MASK)
     {
-        fprintf(stderr, "нашел команду без аргумента \n");
         proc->ip += sizeof(cmd_t);
-        
         #define DEF_CMD(cmd_name, id, is_jump, ...) \
             case id: \
                 __VA_ARGS__ \
@@ -109,11 +103,8 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
     
     if (command_id == 5)
     {
-        fprintf(stderr, "Чекаю аргумент\n");
-
         if ((cmd_raw & CONST_MASK) == CONST_MASK)
         {
-            fprintf(stderr, "о конста\n");
             long const_tmp = *(long*)(text + proc->ip);
 
             push(proc, 1, const_tmp);
@@ -123,7 +114,6 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 
         if ((cmd_raw & REG_MASK) == REG_MASK)
         {
-            fprintf(stderr, "о рег\n");
             reg_t reg_tmp = *(reg_t*)(text + proc->ip);
 
             push(proc, 2, reg_tmp);
@@ -136,7 +126,6 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
     {
         if ((cmd_raw & REG_MASK) == REG_MASK)
         {
-            fprintf(stderr, "о рег\n");
             reg_t reg_tmp = *(reg_t*)(text + proc->ip);
 
             pop(proc, 1, reg_tmp);
@@ -147,8 +136,6 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
     else
     if ((command_id >= 16) && (command_id <= 22))
     {
-        fprintf(stderr, "Чекаю аргумент\n");
-        fprintf(stderr, "о конста\n");
         long const_tmp = *(long*)(text + proc->ip);
 
         if (command_id == 16)
@@ -185,8 +172,6 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
         {
             jeb(proc, const_tmp);
         }
-
-        proc->ip += sizeof(imm_t);
     }
 }
 
