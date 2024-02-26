@@ -7,11 +7,11 @@
 const int NUMBER_OF_COMMANDS = 9;
 const int NUMBER_OF_REGISTRS = 4;
 
-const byte_t REG_MASK   = 0b010'00000;
 const byte_t CONST_MASK = 0b100'00000;
+const byte_t REG_MASK   = 0b010'00000;
 const byte_t MEM_MASK   = 0b001'00000;
 const byte_t CMD_MASK   = 0b000'11111;
-const byte_t NO_MASK    = 0b000;
+const byte_t NO_MASK    = 0b000'00000;
 
 typedef uint8_t reg_t;
 typedef uint8_t cmd_t;
@@ -47,7 +47,7 @@ struct reg
 
 constexpr static reg reg_array[] = {
     {
-        .name = "rax",
+        .name = "rax", 
         .id = 1
     },
 

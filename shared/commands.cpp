@@ -12,7 +12,7 @@ int add(Stack* stack)
     elem_t first_tmp = 0;
     elem_t second_tmp = 0;
 
-    stack_pop(stack, &first_tmp);
+    stack_pop(stack, &first_tmp); //FIXME - POP(&first_tmp)
     stack_pop(stack, &second_tmp);
     stack_push(stack, first_tmp + second_tmp);
 
@@ -105,6 +105,8 @@ int pop(Processor* proc, int primary_arg, int optional_arg)
 {
     if (primary_arg == 1)
     {
+        stack_pop(&proc->stack, &proc->reg[optional_arg - 1]); //FIXME - 
+
         switch (optional_arg)
         {
             case reg_array[0].id:
@@ -159,7 +161,8 @@ int out(Stack* stack)
 
 int jmp(Processor* proc, long optional_arg)
 {
-    proc->ip = optional_arg;
+    proc->ip = (size_t)optional_arg;
+
     return 0;
 }
 
@@ -172,7 +175,9 @@ int je(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp == second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);         
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);
@@ -189,7 +194,9 @@ int jne(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp != second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);
@@ -206,7 +213,9 @@ int ja(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp < second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);
@@ -223,7 +232,9 @@ int jea(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp <= second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);
@@ -240,7 +251,9 @@ int jb(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp > second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);
@@ -257,7 +270,9 @@ int jeb(Processor* proc, long optional_arg)
     stack_pop(&proc->stack, &second_tmp);
 
     if (first_tmp >= second_tmp)
-        proc->ip = optional_arg;
+        proc->ip = (size_t)optional_arg;
+    else
+        proc->ip += sizeof(imm_t);
 
     stack_push(&proc->stack, second_tmp);
     stack_push(&proc->stack, first_tmp);

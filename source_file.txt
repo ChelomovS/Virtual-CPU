@@ -1,6 +1,12 @@
+    push 5
 in
-jmp label
+je LABEL
+add
+out
+halt
+LABEL:
 in
-label:
+mul
+mul
 out
 halt

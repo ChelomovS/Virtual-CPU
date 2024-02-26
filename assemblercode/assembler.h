@@ -29,6 +29,7 @@ struct Assembler
     size_t pass;  
     label* name_table;
     size_t number_labels;
+    
 };
 
 enum asm_errors

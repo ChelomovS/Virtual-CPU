@@ -44,13 +44,13 @@ asm_errors asm_ctor(Assembler* assembler, const int argc, const char** argv)
     if (assembler->bin_buf.translated_code == nullptr)
         return asm_bad_alloc;
 
-    assembler->name_table = (label*)(calloc(10, sizeof(label)));
-    
+    assembler->name_table = (label*)(calloc(1, sizeof(label)));
+    if (assembler->name_table == nullptr) 
+        return asm_bad_alloc;
+
     assembler->pass = 0;
 
     assembler->number_labels = 0;
-
-
 
     return asm_ok;
 }
@@ -60,7 +60,7 @@ void asm_dtor(Assembler* assembler)
     ASSERT(assembler != nullptr);
 
     free(assembler->bin_buf.translated_code);
-    free(assembler->name_table); //FIXME - работа с выделение памяти обработка ошибок т д
+    free(assembler->name_table);
 
     FileDataDtor(&assembler->filedata);
 }
@@ -113,18 +113,30 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     bool is_jump_found     = false;
 
     // поиск метки при первом проходе
-        char* pos_label = strchr(line_of_code, ':');
-        if (pos_label != nullptr)
+    char* pos_label = strchr(line_of_code, ':');
+    if (pos_label != nullptr)
+    {
+        if (assembler->pass == 0)
         {
-            if (assembler->pass == 0)
-            {
-                assembler->name_table[assembler->number_labels] = {line_of_code, (size_t)(pos_label - line_of_code), assembler->bin_buf.size};
-                assembler->number_labels++;
-            }
-            return asm_ok;
-        } 
+            assembler->name_table[assembler->number_labels] = 
+                                                {line_of_code, 
+                                                (size_t)(pos_label - line_of_code),
+                                                assembler->bin_buf.size};
+            assembler->number_labels++;
 
-    // кодогенерация
+            label* hold_name_table = assembler->name_table;
+            assembler->name_table = (label*)realloc(assembler->name_table,
+                                                assembler->number_labels * sizeof(label));
+            if (assembler->name_table == nullptr)
+            {
+                assembler->name_table = hold_name_table;
+                return asm_bad_alloc;
+            }
+        }
+        return asm_ok;
+    } 
+
+    // кодоген
     if (sscanf(line_of_code, "%s", command_name) == 1)
     {
         #define DEF_CMD(cmd_name, id, is_jump, ...)     \
@@ -167,15 +179,20 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
             else 
             if (assembler->pass == 1) // второй проход
             {
-                for (size_t label_counter = 0; label_counter < assembler->number_labels; label_counter++)
+                bool label_found = false;
+                for (size_t label_counter = 0; label_counter < assembler->number_labels;
+                                                                    label_counter++)
                 {
                     if (strncmp(assembler->name_table[label_counter].lbl_start, arg_str,
-                                         assembler->name_table[label_counter].lbl_size) == 0)
+                                    assembler->name_table[label_counter].lbl_size) == 0)
                     {
+                        label_found = true;
                         const_num = (imm_t)(assembler->name_table[label_counter].lbl_pozition);
                         break;
                     }
                 }
+                if (label_found == false)
+                    return asm_syntax;
             }
             COPY_TO_BINBUF_CONST(const_num);
         }

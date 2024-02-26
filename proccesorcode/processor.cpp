@@ -38,25 +38,26 @@ proc_errors execute(Processor* proc)
 {
     ASSERT(proc != nullptr);
 
+    proc_errors error = proc_ok;
+
     while (proc->ip < proc->filedata.bufSize)
     {   
-        do_commands(proc);
+        error = do_commands(proc);
+        if (error != proc_ok)
+            break;
     }
 
-    return proc_ok;
+    return error;
 }
 
 proc_errors do_commands(Processor* proc)
 {
     ASSERT(proc != nullptr);
 
-    PRINT_INTX(*(proc->filedata.buf + proc->ip));
-    PRINT_NUM(proc->ip);
-
     byte_t cmd_raw = *(proc->filedata.buf + proc->ip); 
     byte_t cmd_id = cmd_raw & CMD_MASK;
 
-    if ((cmd_id >= 16) && (cmd_id <= 22))
+    if ((cmd_id >= 16) && (cmd_id <= 22)) // id джампов
     {
         proc->ip += sizeof(cmd_t);
         check_arg(proc, proc->filedata.buf, cmd_raw);
@@ -70,7 +71,7 @@ proc_errors do_commands(Processor* proc)
         return proc_ok;
     }
 
-    if ((*(proc->filedata.buf + proc->ip) & REG_MASK) == REG_MASK) // NOTE macro
+    if ((*(proc->filedata.buf + proc->ip) & REG_MASK) == REG_MASK)
     {
         proc->ip += sizeof(cmd_t);
         check_arg(proc, proc->filedata.buf, cmd_raw);
@@ -79,13 +80,16 @@ proc_errors do_commands(Processor* proc)
 
     if ((*(proc->filedata.buf + proc->ip) & NO_MASK) == NO_MASK)
     {
+        if (cmd_id == 0)
+            return proc_terminated;
+
         proc->ip += sizeof(cmd_t);
         #define DEF_CMD(cmd_name, id, is_jump, ...) \
-            case id: \
-                __VA_ARGS__ \
-                break;
+            case id:                                \
+                __VA_ARGS__                         \
+                break;                              \
         //end of def
-        
+
         switch (cmd_id) 
         {
             #include "../shared/cmd_def.h"
@@ -95,6 +99,7 @@ proc_errors do_commands(Processor* proc)
                 break;
         } 
     }
+    return proc_ok;
 }
 
 void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
@@ -111,7 +116,7 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 
             proc->ip += sizeof(imm_t);
         }
-
+        else
         if ((cmd_raw & REG_MASK) == REG_MASK)
         {
             reg_t reg_tmp = *(reg_t*)(text + proc->ip);
@@ -208,12 +213,15 @@ void check_errors(proc_errors error)
             break;
 
         case proc_invalid_file:
-            fprintf(stderr, RED "Invalid file");
+            fprintf(stderr, RED "Invalid file" BLACK);
+            break;
+
+        case proc_terminated:
+            fprintf(stderr, RED "Terminated" BLACK);
             break;
 
         default:
             ASSERT(0 && "UNKNOWN ERROR");
             break;
-
     }
 }
