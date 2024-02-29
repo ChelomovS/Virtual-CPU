@@ -213,15 +213,15 @@ void check_errors(proc_errors error)
             break;
 
         case proc_invalid_file:
-            fprintf(stderr, RED "Invalid file" BLACK);
+            fprintf(stderr, RED "Invalid file\n" BLACK);
             break;
 
         case proc_terminated:
-            fprintf(stderr, RED "Terminated" BLACK);
+            fprintf(stderr, RED "Terminated\n" BLACK);
             break;
 
         default:
-            ASSERT(0 && "UNKNOWN ERROR");
+            ASSERT(0 && "UNKNOWN ERROR\n");
             break;
     }
 }
