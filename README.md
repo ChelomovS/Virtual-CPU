@@ -21,4 +21,4 @@
 <p align="center"><img src="https://github.com/ChelomovS/Virtual-CPU/blob/main/Images/cat.gif" width="30%"></p>
 
 ## Support
-**This project is created by (https://github.com/ChelomovS)**
+**This project is created by https://github.com/ChelomovS**
