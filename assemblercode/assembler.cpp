@@ -17,7 +17,13 @@
         resize(assembler);\
         memcpy(assembler->bin_buf.translated_code\
                + assembler->bin_buf.size, &A, sizeof(reg_t));\
-        assembler->bin_buf.size += sizeof(reg_t);\
+        assembler->bin_buf.size += sizeof(reg_t);
+
+#define COPY_TO_BINBUF_MEMORY_CELL(A)\
+        resize(assembler);\
+        memcpy(assembler->bin_buf.translated_code\
+               + assembler->bin_buf.size, &A, sizeof(mem_t));\
+        assembler->bin_buf.size += sizeof(mem_t);\
 
 #define MAKE_MASK(A, MASK)\
         A |= MASK;\
@@ -44,7 +50,7 @@ asm_errors asm_ctor(Assembler* assembler, const int argc, const char** argv)
     if (assembler->bin_buf.translated_code == nullptr)
         return asm_bad_alloc;
 
-    assembler->name_table = (label*)(calloc(1, sizeof(label)));
+    assembler->name_table = (label*)(calloc(100, sizeof(label)));
     if (assembler->name_table == nullptr) 
         return asm_bad_alloc;
 
@@ -104,13 +110,14 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
     ASSERT(line_of_code != nullptr);
     ASSERT(assembler    != nullptr);
     
-    char  command_name[10] = "";
-    char  arg_str[10]      = "";
-    long  arg_num          = 0;
-    imm_t const_num        = 0;
-    reg_t reg_num          = 0;
-    cmd_t cmd_form         = 0;
-    bool is_jump_found     = false;
+    char  command_name[100] = "";
+    char  arg_str[100]      = "";
+    long  arg_num           = 0;
+    imm_t const_num         = 0;
+    reg_t reg_num           = 0;
+    cmd_t cmd_form          = 0;
+    mem_t mem_cell          = 0;
+    bool is_jump_found      = false;
 
     // поиск метки при первом проходе
     char* pos_label = strchr(line_of_code, ':');
@@ -126,7 +133,7 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
 
             label* hold_name_table = assembler->name_table;
             assembler->name_table = (label*)realloc(assembler->name_table,
-                                                assembler->number_labels * sizeof(label));
+                                                assembler->number_labels * sizeof(label) * 2);
             if (assembler->name_table == nullptr)
             {
                 assembler->name_table = hold_name_table;
@@ -197,20 +204,31 @@ asm_errors translate_to_code(Assembler* assembler, char* line_of_code)
             COPY_TO_BINBUF_CONST(const_num);
         }
 
-        else // если регистр 
-        for (size_t pass = 0; pass < NUMBER_OF_REGISTRS; pass++)
+        else if (arg_str[0] == '[')
         {
-            if (strcmp(reg_array[pass].name, arg_str) == 0)
-            {
-                MAKE_MASK(cmd_form, REG_MASK);
-                COPY_TO_BINBUF_COMMAND(cmd_form);
-                reg_num = (reg_t)reg_array[pass].id;
-                COPY_TO_BINBUF_REG(reg_num);
+            mem_cell = (mem_t)atoi(arg_str + 1);
 
-                break;
+            MAKE_MASK(cmd_form, MEM_MASK);
+            COPY_TO_BINBUF_COMMAND(cmd_form);
+            COPY_TO_BINBUF_MEMORY_CELL(mem_cell);
+        }
+
+        else // если регистр 
+        {
+            for (size_t pass = 0; pass < NUMBER_OF_REGISTRS; pass++)
+            {
+                if (strcmp(reg_array[pass].name, arg_str) == 0)
+                {
+                    MAKE_MASK(cmd_form, REG_MASK);
+                    COPY_TO_BINBUF_COMMAND(cmd_form);
+                    reg_num = (reg_t)reg_array[pass].id;
+                    COPY_TO_BINBUF_REG(reg_num);
+
+                    break;
+                }
             }
         }
-    } 
+    }
 
     // команда без аргумента 
     else

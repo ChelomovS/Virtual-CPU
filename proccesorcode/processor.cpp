@@ -16,7 +16,7 @@ proc_errors proc_constructor(Processor* proc, const int argc, const char** argv)
 
     proc->filedata.bufSize = GetFileSize(translated_file);
 
-    proc->filedata.buf = (byte_t*)calloc(proc->filedata.bufSize, sizeof(byte_t));
+    proc->filedata.buf = (byte_t*)calloc(proc->filedata.bufSize * 2, sizeof(byte_t));//FIXME - 
     if (proc->filedata.buf == nullptr)
         return proc_bad_alloc;
 
@@ -24,13 +24,14 @@ proc_errors proc_constructor(Processor* proc, const int argc, const char** argv)
 
     fclose(translated_file);
     
-    stack_constuctor(&proc->stack, 100);
+    stack_constuctor(&proc->stack, 1000);
     proc->reg[0] = 0;
     proc->reg[1] = 0;
     proc->reg[2] = 0;
     proc->reg[3] = 0;
     proc->ip = 0;
 
+    stack_constuctor(&proc->ret_stack, 1000);
     return proc_ok;
 }
 
@@ -57,7 +58,7 @@ proc_errors do_commands(Processor* proc)
     byte_t cmd_raw = *(proc->filedata.buf + proc->ip); 
     byte_t cmd_id = cmd_raw & CMD_MASK;
 
-    if ((cmd_id >= 16) && (cmd_id <= 22)) // id джампов
+    if ((cmd_id >= 16) && (cmd_id <= 24)) // id джампов
     {
         proc->ip += sizeof(cmd_t);
         check_arg(proc, proc->filedata.buf, cmd_raw);
@@ -77,6 +78,14 @@ proc_errors do_commands(Processor* proc)
         check_arg(proc, proc->filedata.buf, cmd_raw);
         return proc_ok;
     }
+
+    if ((*(proc->filedata.buf + proc->ip) & MEM_MASK) == MEM_MASK)
+    {
+        proc->ip += sizeof(cmd_t);
+        check_arg(proc, proc->filedata.buf, cmd_raw);
+        return proc_ok;
+    }
+
 
     if ((*(proc->filedata.buf + proc->ip) & NO_MASK) == NO_MASK)
     {
@@ -106,7 +115,7 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 {
     byte_t command_id = cmd_raw & CMD_MASK;
     
-    if (command_id == 5)
+    if (command_id == 6)
     {
         if ((cmd_raw & CONST_MASK) == CONST_MASK)
         {
@@ -125,9 +134,18 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 
             proc->ip += sizeof(reg_t);
         }
+        else 
+        if ((cmd_raw & MEM_MASK) == MEM_MASK)
+        {
+            mem_t mem_cell = *(mem_t*)(text + proc->ip);
+
+            push(proc, 3, mem_cell);
+
+            proc->ip += sizeof(mem_t);
+        }
     }
     else
-    if (command_id == 6)
+    if (command_id == 7)
     {
         if ((cmd_raw & REG_MASK) == REG_MASK)
         {
@@ -137,9 +155,19 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
 
             proc->ip += sizeof(reg_t);
         }
+
+        else 
+        if ((cmd_raw & MEM_MASK) == MEM_MASK)
+        {
+            mem_t mem_cell = *(mem_t*)(text + proc->ip);
+
+            pop(proc, 2, mem_cell);
+
+            proc->ip += sizeof(mem_t);
+        }
     }
     else
-    if ((command_id >= 16) && (command_id <= 22))
+    if ((command_id >= 16) && (command_id <= 24))
     {
         long const_tmp = *(long*)(text + proc->ip);
 
@@ -177,6 +205,16 @@ void check_arg(Processor* proc, byte_t* text, byte_t cmd_raw)
         {
             jeb(proc, const_tmp);
         }
+
+        if (command_id == 23)
+        {
+            call(proc, const_tmp);
+        }
+
+        if (command_id == 24)
+        {
+            ret(proc);
+        }
     }
 }
 
@@ -191,6 +229,8 @@ void proc_destructor(Processor* proc)
     proc->reg[1] = 0;
     proc->reg[2] = 0;
     proc->reg[3] = 0;
+
+    stack_destructor(&proc->ret_stack);
 }
 
 void check_errors(proc_errors error)
@@ -213,15 +253,15 @@ void check_errors(proc_errors error)
             break;
 
         case proc_invalid_file:
-            fprintf(stderr, RED "Invalid file\n" BLACK);
+            fprintf(stderr, RED "Invalid file" BLACK);
             break;
 
         case proc_terminated:
-            fprintf(stderr, RED "Terminated\n" BLACK);
+            fprintf(stderr, RED "Terminated" BLACK);
             break;
 
         default:
-            ASSERT(0 && "UNKNOWN ERROR\n");
+            ASSERT(0 && "UNKNOWN ERROR");
             break;
     }
 }

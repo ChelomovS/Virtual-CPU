@@ -1,12 +1,40 @@
-    push 5
-in
-je LABEL
-add
+in                   
+pop rax 
+
+push rax
+push 0
+
+jb neg                  
+
+call factorial
 out
 halt
-LABEL:
-in
-mul
-mul
-out
-halt
+
+factorial: 
+
+    push rax
+    push 1
+    
+    jb return
+
+    push rax
+    push rax
+    push 1
+    sub
+    pop rax
+    push rax
+    out
+    call factorial
+
+    mul
+
+    ret
+
+neg:
+    push -1
+    out 
+    halt
+
+return:
+    push 1
+    ret

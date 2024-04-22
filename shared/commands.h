@@ -4,8 +4,8 @@
 #include "stack.h"
 #include "file_lib_bin.h"
 
-const int NUMBER_OF_COMMANDS = 9;
 const int NUMBER_OF_REGISTRS = 4;
+const int SIZE_OF_MEMORY     = 16;
 
 const byte_t CONST_MASK = 0b100'00000;
 const byte_t REG_MASK   = 0b010'00000;
@@ -13,9 +13,10 @@ const byte_t MEM_MASK   = 0b001'00000;
 const byte_t CMD_MASK   = 0b000'11111;
 const byte_t NO_MASK    = 0b000'00000;
 
-typedef uint8_t reg_t;
-typedef uint8_t cmd_t;
+typedef uint8_t  reg_t;
+typedef uint8_t  cmd_t;
 typedef uint64_t imm_t;
+typedef uint8_t  mem_t;
 
 struct BinBuf 
 {
@@ -30,6 +31,8 @@ struct Processor
     FileDataBin filedata;
     long reg[4];
     size_t ip;
+    long memory[SIZE_OF_MEMORY];
+    Stack ret_stack;
 };
 
 struct command 
@@ -67,21 +70,23 @@ constexpr static reg reg_array[] = {
     }
 };
 
-int halt();
-int add(Stack* stack);
-int sub(Stack* stack);
-int mul(Stack* stack);
-int div(Stack* stack);
+int halt ();
+int add (Stack* stack);
+int sub (Stack* stack);
+int mul (Stack* stack);
+int div (Stack* stack);
+int sqr (Stack* stack);
 int push(Processor* proc, int primary_arg, long optional_arg);
-int pop(Processor* proc, int primary_arg, int optional_arg);
-int in(Stack* stack);
-int out(Stack* stack);
-int jmp(Processor* proc, long optional_arg);
-int je(Processor* proc, long optional_arg);
-int jne(Processor* proc, long optional_arg);
-int ja(Processor* proc, long optional_arg);
-int jea(Processor* proc, long optional_arg);
-int jb(Processor* proc, long optional_arg);
-int jeb(Processor* proc, long optional_arg);
-
+int pop (Processor* proc, int primary_arg, int optional_arg);
+int in  (Stack* stack);
+int out (Stack* stack);
+int jmp (Processor* proc, long optional_arg);
+int je  (Processor* proc, long optional_arg);
+int jne (Processor* proc, long optional_arg);
+int ja  (Processor* proc, long optional_arg);
+int jea (Processor* proc, long optional_arg);
+int jb  (Processor* proc, long optional_arg);
+int jeb (Processor* proc, long optional_arg);
+int call(Processor* proc, long optional_arg);
+int ret (Processor* proc);
 #endif // COMMANDS_H
